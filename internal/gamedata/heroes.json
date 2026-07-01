@@ -1,0 +1,210 @@
+[
+  {
+    "name": "D.Va",
+    "role": "Tank"
+  },
+  {
+    "name": "Domina",
+    "role": "Tank"
+  },
+  {
+    "name": "Doomfist",
+    "role": "Tank"
+  },
+  {
+    "name": "Hazard",
+    "role": "Tank"
+  },
+  {
+    "name": "Junker Queen",
+    "role": "Tank"
+  },
+  {
+    "name": "Mauga",
+    "role": "Tank"
+  },
+  {
+    "name": "Orisa",
+    "role": "Tank"
+  },
+  {
+    "name": "Ramattra",
+    "role": "Tank"
+  },
+  {
+    "name": "Reinhardt",
+    "role": "Tank"
+  },
+  {
+    "name": "Roadhog",
+    "role": "Tank"
+  },
+  {
+    "name": "Sigma",
+    "role": "Tank"
+  },
+  {
+    "name": "Winston",
+    "role": "Tank"
+  },
+  {
+    "name": "Wrecking Ball",
+    "role": "Tank"
+  },
+  {
+    "name": "Zarya",
+    "role": "Tank"
+  },
+  {
+    "name": "Anran",
+    "role": "DPS"
+  },
+  {
+    "name": "Ashe",
+    "role": "DPS"
+  },
+  {
+    "name": "Bastion",
+    "role": "DPS"
+  },
+  {
+    "name": "Cassidy",
+    "role": "DPS"
+  },
+  {
+    "name": "Echo",
+    "role": "DPS"
+  },
+  {
+    "name": "Emre",
+    "role": "DPS"
+  },
+  {
+    "name": "Freja",
+    "role": "DPS"
+  },
+  {
+    "name": "Genji",
+    "role": "DPS"
+  },
+  {
+    "name": "Hanzo",
+    "role": "DPS"
+  },
+  {
+    "name": "Junkrat",
+    "role": "DPS"
+  },
+  {
+    "name": "Mei",
+    "role": "DPS"
+  },
+  {
+    "name": "Pharah",
+    "role": "DPS"
+  },
+  {
+    "name": "Reaper",
+    "role": "DPS"
+  },
+  {
+    "name": "Shion",
+    "role": "DPS"
+  },
+  {
+    "name": "Sierra",
+    "role": "DPS"
+  },
+  {
+    "name": "Sojourn",
+    "role": "DPS"
+  },
+  {
+    "name": "Soldier: 76",
+    "role": "DPS"
+  },
+  {
+    "name": "Sombra",
+    "role": "DPS"
+  },
+  {
+    "name": "Symmetra",
+    "role": "DPS"
+  },
+  {
+    "name": "Torbjörn",
+    "role": "DPS"
+  },
+  {
+    "name": "Tracer",
+    "role": "DPS"
+  },
+  {
+    "name": "Vendetta",
+    "role": "DPS"
+  },
+  {
+    "name": "Venture",
+    "role": "DPS"
+  },
+  {
+    "name": "Widowmaker",
+    "role": "DPS"
+  },
+  {
+    "name": "Ana",
+    "role": "Support"
+  },
+  {
+    "name": "Baptiste",
+    "role": "Support"
+  },
+  {
+    "name": "Brigitte",
+    "role": "Support"
+  },
+  {
+    "name": "Illari",
+    "role": "Support"
+  },
+  {
+    "name": "Jetpack Cat",
+    "role": "Support"
+  },
+  {
+    "name": "Juno",
+    "role": "Support"
+  },
+  {
+    "name": "Kiriko",
+    "role": "Support"
+  },
+  {
+    "name": "Lifeweaver",
+    "role": "Support"
+  },
+  {
+    "name": "Lúcio",
+    "role": "Support"
+  },
+  {
+    "name": "Mercy",
+    "role": "Support"
+  },
+  {
+    "name": "Mizuki",
+    "role": "Support"
+  },
+  {
+    "name": "Moira",
+    "role": "Support"
+  },
+  {
+    "name": "Wuyang",
+    "role": "Support"
+  },
+  {
+    "name": "Zenyatta",
+    "role": "Support"
+  }
+]

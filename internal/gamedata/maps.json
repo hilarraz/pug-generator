@@ -1,0 +1,146 @@
+[
+  {
+    "name": "Antarctic Peninsula",
+    "mode": "Control"
+  },
+  {
+    "name": "Arena Victoriae",
+    "mode": "Control"
+  },
+  {
+    "name": "Busan",
+    "mode": "Control"
+  },
+  {
+    "name": "Gogadoro",
+    "mode": "Control"
+  },
+  {
+    "name": "Ilios",
+    "mode": "Control"
+  },
+  {
+    "name": "Lijiang Tower",
+    "mode": "Control"
+  },
+  {
+    "name": "Nepal",
+    "mode": "Control"
+  },
+  {
+    "name": "Oasis",
+    "mode": "Control"
+  },
+  {
+    "name": "Samoa",
+    "mode": "Control"
+  },
+  {
+    "name": "Wuxing University",
+    "mode": "Control"
+  },
+  {
+    "name": "Circuit Royal",
+    "mode": "Escort"
+  },
+  {
+    "name": "Dorado",
+    "mode": "Escort"
+  },
+  {
+    "name": "Havana",
+    "mode": "Escort"
+  },
+  {
+    "name": "Junkertown",
+    "mode": "Escort"
+  },
+  {
+    "name": "Rialto",
+    "mode": "Escort"
+  },
+  {
+    "name": "Route 66",
+    "mode": "Escort"
+  },
+  {
+    "name": "Shambali Monastery",
+    "mode": "Escort"
+  },
+  {
+    "name": "Watchpoint: Gibraltar",
+    "mode": "Escort"
+  },
+  {
+    "name": "Blizzard World",
+    "mode": "Hybrid"
+  },
+  {
+    "name": "Eichenwalde",
+    "mode": "Hybrid"
+  },
+  {
+    "name": "Hollywood",
+    "mode": "Hybrid"
+  },
+  {
+    "name": "King’s Row",
+    "mode": "Hybrid"
+  },
+  {
+    "name": "Midtown",
+    "mode": "Hybrid"
+  },
+  {
+    "name": "Numbani",
+    "mode": "Hybrid"
+  },
+  {
+    "name": "Paraíso",
+    "mode": "Hybrid"
+  },
+  {
+    "name": "Colosseo",
+    "mode": "Push"
+  },
+  {
+    "name": "Esperança",
+    "mode": "Push"
+  },
+  {
+    "name": "New Queen Street",
+    "mode": "Push"
+  },
+  {
+    "name": "Place Lacroix",
+    "mode": "Push"
+  },
+  {
+    "name": "Redwood Dam",
+    "mode": "Push"
+  },
+  {
+    "name": "Runasapi",
+    "mode": "Push"
+  },
+  {
+    "name": "Aatlis",
+    "mode": "Flashpoint"
+  },
+  {
+    "name": "New Junk City",
+    "mode": "Flashpoint"
+  },
+  {
+    "name": "Suravasa",
+    "mode": "Flashpoint"
+  },
+  {
+    "name": "Hanaoka",
+    "mode": "Clash"
+  },
+  {
+    "name": "Throne of Anubis",
+    "mode": "Clash"
+  }
+]

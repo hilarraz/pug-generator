@@ -1,0 +1,7 @@
+.idea/
+.claude/
+
+# Build output
+/bin/
+/fyne-cross/
+*.exe
