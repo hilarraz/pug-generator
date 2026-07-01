@@ -1,5 +1,6 @@
 .idea/
 .claude/
+.DS_Store
 
 # Build output
 /bin/

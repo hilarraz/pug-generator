@@ -66,6 +66,11 @@ go generate ./internal/gamedata
 > so cross-compiling requires a mingw-w64 toolchain. `fyne-cross` (Docker) is the
 > path of least resistance from a Mac; alternatively build directly on Windows.
 
+**CI:** `.github/workflows/build-windows.yml` builds the Windows `.exe` on a
+GitHub-hosted Windows runner (which has the required C toolchain) on every push to
+`main`/`master` and on manual dispatch. Download it from the run's **Artifacts**
+(`pug-generator-windows-amd64`). This needs no local Docker or Windows machine.
+
 ## Architecture
 
 ```
