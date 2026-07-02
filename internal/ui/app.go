@@ -29,10 +29,11 @@ type App struct {
 
 	cfg *config.Config
 
-	mapsView    *poolView
-	heroesView  *poolView
-	playersView *playersTab
-	pugView     *pugTab
+	mapsView     *poolView
+	heroesView   *poolView
+	playersView  *playersTab
+	pugView      *pugTab
+	settingsView *settingsTab
 }
 
 // New builds the application, loading the embedded game data.
@@ -70,12 +71,14 @@ func (a *App) buildUI() fyne.CanvasObject {
 	a.heroesView = a.newHeroesPool()
 	a.playersView = a.newPlayersTab()
 	a.pugView = a.newPugTab()
+	a.settingsView = a.newSettingsTab()
 
 	tabs := container.NewAppTabs(
 		container.NewTabItem("Maps", a.mapsView.root),
 		container.NewTabItem("Héros", a.heroesView.root),
 		container.NewTabItem("Joueurs", a.playersView.root),
 		container.NewTabItem("PUG", a.pugView.content),
+		container.NewTabItem("Paramètres", a.settingsView.root),
 	)
 
 	toolbar := widget.NewToolbar(
@@ -131,6 +134,7 @@ func (a *App) refreshAll() {
 	a.mapsView.refresh()
 	a.heroesView.refresh()
 	a.playersView.refresh(a)
+	a.settingsView.refresh(a)
 }
 
 // heroNamesByRole returns the sorted hero names for a role.
@@ -145,22 +149,23 @@ func (a *App) heroNamesByRole(role domain.Role) []string {
 	return names
 }
 
-// mapNames returns every map name, sorted.
-func (a *App) mapNames() []string {
-	names := make([]string, 0, len(a.maps))
-	for _, m := range a.maps {
-		names = append(names, m.Name)
-	}
-	sort.Strings(names)
-	return names
-}
-
 // enabledMaps returns the maps currently in the active pool.
 func (a *App) enabledMaps() []domain.Map {
 	out := make([]domain.Map, 0, len(a.maps))
 	for _, m := range a.maps {
 		if a.cfg.IsMapEnabled(m.Name) {
 			out = append(out, m)
+		}
+	}
+	return out
+}
+
+// enabledHeroes returns the heroes currently in the active pool.
+func (a *App) enabledHeroes() []domain.Hero {
+	out := make([]domain.Hero, 0, len(a.heroes))
+	for _, h := range a.heroes {
+		if a.cfg.IsHeroEnabled(h.Name) {
+			out = append(out, h)
 		}
 	}
 	return out

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/theme"
@@ -89,8 +90,10 @@ func (t *pugTab) updateEnabled(roleQueue bool) {
 
 func (t *pugTab) generate(a *App) {
 	opts := generator.Options{
-		TeamCount: atoi(t.teamCount.Selected),
-		RoleQueue: t.roleQueue.Checked,
+		TeamCount:    atoi(t.teamCount.Selected),
+		RoleQueue:    t.roleQueue.Checked,
+		AssignHeroes: a.cfg.Settings.AssignHeroes,
+		Heroes:       a.enabledHeroes(),
 	}
 	if opts.RoleQueue {
 		opts.Composition = map[domain.Role]int{
@@ -115,7 +118,10 @@ func (t *pugTab) showResult(res *generator.Result) {
 	items := make([]fyne.CanvasObject, 0)
 
 	if res.Map != nil {
-		items = append(items, widget.NewCard("Map", string(res.Map.Mode)+" — "+res.Map.Name, nil))
+		mapImg := canvas.NewImageFromResource(mapResource(res.Map.Name))
+		mapImg.FillMode = canvas.ImageFillContain
+		mapImg.SetMinSize(fyne.NewSize(260, 146))
+		items = append(items, widget.NewCard("Map", string(res.Map.Mode)+" — "+res.Map.Name, mapImg))
 	}
 
 	teamCards := make([]fyne.CanvasObject, 0, len(res.Teams))
@@ -126,7 +132,7 @@ func (t *pugTab) showResult(res *generator.Result) {
 			if a.Role != "" {
 				label = string(a.Role) + " — " + a.Player.Name
 			}
-			lines.Add(widget.NewLabel(label))
+			lines.Add(playerLine(label, a.Hero))
 		}
 		teamCards = append(teamCards, widget.NewCard(fmt.Sprintf("Équipe %d", i+1), "", lines))
 	}
@@ -142,6 +148,18 @@ func (t *pugTab) showResult(res *generator.Result) {
 
 	t.results.Objects = items
 	t.results.Refresh()
+}
+
+// playerLine renders one seated player: their role/name label, prefixed with the
+// assigned hero's icon (and its name) when a hero was drawn.
+func playerLine(label, hero string) fyne.CanvasObject {
+	if hero == "" {
+		return widget.NewLabel(label)
+	}
+	icon := canvas.NewImageFromResource(heroResource(hero))
+	icon.FillMode = canvas.ImageFillContain
+	icon.SetMinSize(fyne.NewSize(28, 28))
+	return container.NewBorder(nil, nil, icon, nil, widget.NewLabel(label+"  ·  "+hero))
 }
 
 // atoi parses a value coming from a controlled Select; it defaults to 0.

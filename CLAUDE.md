@@ -15,13 +15,20 @@ group can keep and tweak its setup between game nights.
 
 **Status — early foundation.** What exists today:
 
-- A Fyne GUI with four tabs: **Maps**, **Héros**, **Joueurs**, **PUG**.
-- Map pool and hero pool selection (per-item checkboxes, select-all / clear-all).
-- Player roster with per-role preferred heroes and preferred/disliked maps.
+- A Fyne GUI with five tabs: **Maps**, **Héros**, **Joueurs**, **PUG**,
+  **Paramètres**.
+- Map pool and hero pool selection as image cards (per-item toggle, select-all /
+  clear-all).
+- Player roster with capped, image-based preferences: preferred heroes (3 per
+  role), disliked heroes (3), preferred maps (3), disliked maps (3) — picked from
+  a card gallery.
 - Configurable team generation (team count, role queue on/off, per-role
-  composition) with role-aware assignment, plus a random map pick.
+  composition) with role-aware assignment, plus a random map pick. An optional
+  setting (**Paramètres**) also draws each player a concrete hero from their
+  preferences (unique per team, avoiding disliked).
 - Load/Save of the whole session to a JSON file.
-- Embedded game data generated from the OverFast API via `go generate`.
+- Embedded game data (incl. hero/map images) generated from the OverFast API via
+  `go generate`.
 
 Planned (see [Roadmap](#roadmap)): the in-match hero-ban flow (each team bans
 heroes before a round), and skill-aware balancing.
@@ -101,9 +108,11 @@ internal/
     heroes_tab.go           Hero pool tab (cards grouped by role).
     poolview.go             Shared master/detail pool selector (categories + item cards).
     poolcard.go             Tappable image+name card with included/excluded look.
+    prefselect.go           Capped image multi-select (chips + card-gallery picker).
     images.go               Wraps embedded hero/map images as Fyne resources.
-    players_tab.go          Player roster tab (master/detail: list + editor).
+    players_tab.go          Player roster tab (master/detail: list + preference editor).
     pug_tab.go              PUG tab: generation controls + results display.
+    settings_tab.go         Paramètres tab: session-wide generation options.
 ```
 
 ### Data flow & the two data layers
@@ -132,10 +141,13 @@ The UI (`internal/ui`) reads the embedded game data once at startup, holds a sin
 - **`GameMode`** — `Control`, `Escort`, `Hybrid`, `Push`, `Flashpoint`, `Clash`
   (`domain.GameModes` is the canonical ordered list).
 - **`Map`** — `{ Name string; Mode GameMode }`.
-- **`Player`** — `{ Name; PreferredHeroes map[Role][]string; PreferredMaps []string;
-  DislikedMaps []string }`.
+- **`Player`** — `{ Name; PreferredHeroes map[Role][]string; DislikedHeroes []string;
+  PreferredMaps []string; DislikedMaps []string }`. The UI caps each list (3 per role
+  for preferred heroes; 3 for the flat lists). Heroes have a fixed role, so disliked
+  heroes are a single flat list rather than per-role.
 - **`Config`** — `{ Version int; EnabledMaps, EnabledHeroes map[string]bool;
-  Players []Player }`. Serialized as the session JSON.
+  Players []Player; Settings Settings }`, where `Settings` = `{ AssignHeroes bool }`.
+  Serialized as the session JSON.
 
 ## Conventions
 
@@ -174,9 +186,12 @@ tab; if a hard filter is needed, add it in `cmd/gendata`.
 2. **(done)** Team generation (`internal/generator`): configurable role-queue /
    open-queue draw with role-aware assignment (bipartite matching on preferred
    heroes) + a random map pick from the enabled pool. Pure, unit-tested.
-3. **Hero ban**: per-team hero bans before a round, removing them from that round's
+3. **(partial)** Hero assignment: the **Paramètres** `AssignHeroes` option draws each
+   seated player a concrete hero from their preferences (unique per team, avoiding
+   disliked). See `assignHeroes` in `internal/generator`.
+4. **Hero ban**: per-team hero bans before a round, removing them from that round's
    available heroes.
-4. **Preference-aware picks & balancing**: weight the map pick by players'
+5. **Preference-aware map pick & balancing**: weight the map pick by players'
    preferred/disliked maps (currently uniform random), and add an optional per-player
    skill rating to balance teams (the model has no skill data today, so team
    assignment within eligibility is random).

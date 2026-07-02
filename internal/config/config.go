@@ -17,6 +17,14 @@ import (
 // migrate on load) when the on-disk shape changes incompatibly.
 const currentVersion = 1
 
+// Settings holds session-wide generation options.
+type Settings struct {
+	// AssignHeroes makes team generation give each player a concrete hero drawn
+	// from their preferences (avoiding duplicates within a team) instead of only
+	// a role. Defaults to false (role only).
+	AssignHeroes bool `json:"assign_heroes"`
+}
+
 // Config is the save/loadable session state.
 type Config struct {
 	Version int `json:"version"`
@@ -29,6 +37,8 @@ type Config struct {
 	EnabledHeroes map[string]bool `json:"enabled_heroes"`
 	// Players is the roster registered for PUGs.
 	Players []domain.Player `json:"players"`
+	// Settings holds session-wide generation options.
+	Settings Settings `json:"settings"`
 }
 
 // New returns an empty config with everything enabled by default.

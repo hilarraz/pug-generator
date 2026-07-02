@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"fyne.io/fyne/v2"
@@ -116,7 +117,9 @@ func (t *playersTab) row(a *App, i int) fyne.CanvasObject {
 	return container.NewBorder(nil, nil, nil, container.NewHBox(prefs, del), name)
 }
 
-// showEditor builds the preference editor for the selected player.
+// showEditor builds the preference editor for the selected player: image-based,
+// capped multi-selects for preferred heroes (3 per role), disliked heroes (3),
+// and preferred / disliked maps (3 each).
 func (t *playersTab) showEditor(a *App) {
 	if t.selected < 0 || t.selected >= len(a.cfg.Players) {
 		return
@@ -129,31 +132,79 @@ func (t *playersTab) showEditor(a *App) {
 	)
 
 	for _, role := range domain.Roles {
-		grp := widget.NewCheckGroup(a.heroNamesByRole(role), nil)
-		grp.SetSelected(p.PreferredHeroes[role])
 		r := role
-		grp.OnChanged = func(sel []string) {
-			if p.PreferredHeroes == nil {
-				p.PreferredHeroes = map[domain.Role][]string{}
-			}
-			p.PreferredHeroes[r] = sel
-		}
-		form.Add(widget.NewCard("Héros préférés — "+string(role), "", grp))
+		sec := newPrefSection(a.win, "Héros préférés — "+string(r),
+			[]pickGroup{{title: string(r), items: a.heroItems(r)}}, 3,
+			func() []string { return p.PreferredHeroes[r] },
+			func(v []string) {
+				if p.PreferredHeroes == nil {
+					p.PreferredHeroes = map[domain.Role][]string{}
+				}
+				p.PreferredHeroes[r] = v
+			},
+		)
+		form.Add(sec.root)
 	}
 
-	mapNames := a.mapNames()
+	form.Add(newPrefSection(a.win, "Héros détestés", a.heroGroups(), 3,
+		func() []string { return p.DislikedHeroes },
+		func(v []string) { p.DislikedHeroes = v },
+	).root)
 
-	prefMaps := widget.NewCheckGroup(mapNames, nil)
-	prefMaps.SetSelected(p.PreferredMaps)
-	prefMaps.OnChanged = func(sel []string) { p.PreferredMaps = sel }
-	form.Add(widget.NewCard("Maps préférées", "", prefMaps))
+	form.Add(newPrefSection(a.win, "Maps préférées", a.mapGroups(), 3,
+		func() []string { return p.PreferredMaps },
+		func(v []string) { p.PreferredMaps = v },
+	).root)
 
-	disMaps := widget.NewCheckGroup(mapNames, nil)
-	disMaps.SetSelected(p.DislikedMaps)
-	disMaps.OnChanged = func(sel []string) { p.DislikedMaps = sel }
-	form.Add(widget.NewCard("Maps détestées", "", disMaps))
+	form.Add(newPrefSection(a.win, "Maps détestées", a.mapGroups(), 3,
+		func() []string { return p.DislikedMaps },
+		func(v []string) { p.DislikedMaps = v },
+	).root)
 
 	t.setEditor(form)
+}
+
+// heroItems returns the pickable cards for one role.
+func (a *App) heroItems(role domain.Role) []pickItem {
+	names := a.heroNamesByRole(role)
+	items := make([]pickItem, 0, len(names))
+	for _, n := range names {
+		items = append(items, pickItem{name: n, res: heroResource(n)})
+	}
+	return items
+}
+
+// heroGroups returns the pickable cards for every hero, grouped by role.
+func (a *App) heroGroups() []pickGroup {
+	groups := make([]pickGroup, 0, len(domain.Roles))
+	for _, role := range domain.Roles {
+		if items := a.heroItems(role); len(items) > 0 {
+			groups = append(groups, pickGroup{title: string(role), items: items})
+		}
+	}
+	return groups
+}
+
+// mapGroups returns the pickable cards for every map, grouped by game mode.
+func (a *App) mapGroups() []pickGroup {
+	byMode := make(map[domain.GameMode][]string)
+	for _, m := range a.maps {
+		byMode[m.Mode] = append(byMode[m.Mode], m.Name)
+	}
+	groups := make([]pickGroup, 0, len(domain.GameModes))
+	for _, mode := range domain.GameModes {
+		names := byMode[mode]
+		if len(names) == 0 {
+			continue
+		}
+		sort.Strings(names)
+		items := make([]pickItem, 0, len(names))
+		for _, n := range names {
+			items = append(items, pickItem{name: n, res: mapResource(n)})
+		}
+		groups = append(groups, pickGroup{title: string(mode), items: items})
+	}
+	return groups
 }
 
 func (t *playersTab) setEditor(content fyne.CanvasObject) {

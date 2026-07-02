@@ -24,13 +24,19 @@ type Options struct {
 	Composition map[domain.Role]int
 	// TeamSize is the number of players per team (open queue only).
 	TeamSize int
+	// AssignHeroes gives each player a concrete hero (Assignment.Hero) drawn from
+	// their preferences, unique within a team, instead of only a role.
+	AssignHeroes bool
+	// Heroes is the enabled hero pool to draw from when AssignHeroes is set.
+	Heroes []domain.Hero
 }
 
-// Assignment is a player placed on a team, with the role they were given. Role
-// is empty in open queue.
+// Assignment is a player placed on a team, with the role they were given (empty
+// in open queue) and, when AssignHeroes is set, the hero they were given.
 type Assignment struct {
 	Player domain.Player
 	Role   domain.Role
+	Hero   string
 }
 
 // Team is one generated team.
@@ -72,7 +78,90 @@ func Generate(rng *rand.Rand, players []domain.Player, maps []domain.Map, opts O
 	} else {
 		assignOpenQueue(rng, players, opts, res)
 	}
+	if opts.AssignHeroes {
+		assignHeroes(rng, opts, res)
+	}
 	return res, nil
+}
+
+// assignHeroes gives every seated player a concrete hero. Within a team heroes
+// are unique (as in a real match). For each player it prefers, in order: one of
+// their preferred heroes for the seat, then any enabled hero for the seat that
+// they don't dislike, then any enabled hero for the seat (disliked allowed as a
+// last resort). A seat's role scopes the pool in role queue; in open queue the
+// whole enabled pool is used. A player is left without a hero only if the pool
+// for the seat is exhausted.
+func assignHeroes(rng *rand.Rand, opts Options, res *Result) {
+	byRole := make(map[domain.Role][]string)
+	all := make([]string, 0, len(opts.Heroes))
+	for _, h := range opts.Heroes {
+		byRole[h.Role] = append(byRole[h.Role], h.Name)
+		all = append(all, h.Name)
+	}
+	for ti := range res.Teams {
+		used := make(map[string]bool)
+		for pi := range res.Teams[ti].Players {
+			a := &res.Teams[ti].Players[pi]
+			pool := all
+			if opts.RoleQueue {
+				pool = byRole[a.Role]
+			}
+			if hero := pickHero(rng, a.Player, a.Role, opts.RoleQueue, pool, used); hero != "" {
+				a.Hero = hero
+				used[hero] = true
+			}
+		}
+	}
+}
+
+func pickHero(rng *rand.Rand, p domain.Player, role domain.Role, roleQueue bool, pool []string, used map[string]bool) string {
+	inPool := make(map[string]bool, len(pool))
+	for _, n := range pool {
+		inPool[n] = true
+	}
+	disliked := make(map[string]bool)
+	for _, n := range p.DislikedHeroes {
+		disliked[n] = true
+	}
+
+	var preferred []string
+	if roleQueue {
+		preferred = p.PreferredHeroes[role]
+	} else {
+		for _, r := range domain.Roles {
+			preferred = append(preferred, p.PreferredHeroes[r]...)
+		}
+	}
+
+	// Tier 1: a preferred hero that is enabled, not disliked, not taken.
+	if h := choose(rng, preferred, inPool, disliked, used); h != "" {
+		return h
+	}
+	// Tier 2: any enabled hero for the seat, not disliked, not taken.
+	if h := choose(rng, pool, nil, disliked, used); h != "" {
+		return h
+	}
+	// Tier 3: any enabled hero for the seat, not taken (disliked allowed).
+	return choose(rng, pool, nil, nil, used)
+}
+
+// choose returns a random name from candidates that is in mustBeIn (when
+// non-nil) and in neither exclude set, or "" if none qualifies.
+func choose(rng *rand.Rand, candidates []string, mustBeIn, excludeA, excludeB map[string]bool) string {
+	var ok []string
+	for _, n := range candidates {
+		if mustBeIn != nil && !mustBeIn[n] {
+			continue
+		}
+		if excludeA[n] || excludeB[n] {
+			continue
+		}
+		ok = append(ok, n)
+	}
+	if len(ok) == 0 {
+		return ""
+	}
+	return ok[rng.Intn(len(ok))]
 }
 
 func assignOpenQueue(rng *rand.Rand, players []domain.Player, opts Options, res *Result) {
