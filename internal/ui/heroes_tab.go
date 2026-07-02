@@ -20,5 +20,6 @@ func (a *App) newHeroesPool() *poolView {
 	return newPoolView(cats,
 		func(name string) bool { return a.cfg.IsHeroEnabled(name) },
 		func(name string, on bool) { a.cfg.EnabledHeroes[name] = on },
+		heroResource,
 	)
 }

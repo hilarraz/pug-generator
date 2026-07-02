@@ -31,23 +31,25 @@ type poolView struct {
 	isEnabled  func(name string) bool
 	setEnabled func(name string, on bool)
 
-	categories  []poolCategory
-	catButtons  []*widget.Button
-	itemButtons map[string]*widget.Button
-	catItems    [][]*widget.Button // item buttons per category (aligned to categories)
+	categories []poolCategory
+	catButtons []*widget.Button
+	itemCards  map[string]*poolCard
+	catItems   [][]*poolCard // item cards per category (aligned to categories)
 
 	title    *widget.Label
 	grid     *fyne.Container
 	selected int
 }
 
-func newPoolView(categories []poolCategory, isEnabled func(string) bool, setEnabled func(string, bool)) *poolView {
+// newPoolView builds the selector. imageFor supplies each item's picture (it may
+// return nil for a missing image).
+func newPoolView(categories []poolCategory, isEnabled func(string) bool, setEnabled func(string, bool), imageFor func(name string) fyne.Resource) *poolView {
 	pv := &poolView{
-		isEnabled:   isEnabled,
-		setEnabled:  setEnabled,
-		categories:  categories,
-		itemButtons: make(map[string]*widget.Button),
-		catItems:    make([][]*widget.Button, len(categories)),
+		isEnabled:  isEnabled,
+		setEnabled: setEnabled,
+		categories: categories,
+		itemCards:  make(map[string]*poolCard),
+		catItems:   make([][]*poolCard, len(categories)),
 	}
 
 	// Left: one selectable button per category, with a colored swatch.
@@ -69,24 +71,24 @@ func newPoolView(categories []poolCategory, isEnabled func(string) bool, setEnab
 	clearAll := widget.NewButton("Tout décocher", func() { pv.setAllInCategory(false) })
 	header := container.NewBorder(nil, nil, pv.title, container.NewHBox(selectAll, clearAll))
 
-	pv.grid = container.NewGridWrap(fyne.NewSize(220, 40))
+	pv.grid = container.NewGridWrap(cardSize)
 	right := container.NewBorder(
 		container.NewVBox(header, widget.NewSeparator()), nil, nil, nil,
 		container.NewVScroll(pv.grid),
 	)
 
-	// Pre-build every item button, grouped by category.
+	// Pre-build every item card, grouped by category.
 	for i, cat := range categories {
+		i := i
 		for _, name := range cat.items {
 			name := name
-			btn := widget.NewButton(name, nil)
-			btn.OnTapped = func() {
+			card := newPoolCard(name, imageFor(name), func() {
 				pv.setEnabled(name, !pv.isEnabled(name))
 				pv.refreshItem(name)
 				pv.updateCatButton(i)
-			}
-			pv.itemButtons[name] = btn
-			pv.catItems[i] = append(pv.catItems[i], btn)
+			})
+			pv.itemCards[name] = card
+			pv.catItems[i] = append(pv.catItems[i], card)
 		}
 	}
 
@@ -129,9 +131,9 @@ func (pv *poolView) setAllInCategory(on bool) {
 	pv.updateCatButton(pv.selected)
 }
 
-// refresh re-syncs every button with the current enabled state (after a load).
+// refresh re-syncs every card with the current enabled state (after a load).
 func (pv *poolView) refresh() {
-	for name := range pv.itemButtons {
+	for name := range pv.itemCards {
 		pv.refreshItem(name)
 	}
 	for i := range pv.categories {
@@ -140,13 +142,7 @@ func (pv *poolView) refresh() {
 }
 
 func (pv *poolView) refreshItem(name string) {
-	b := pv.itemButtons[name]
-	if pv.isEnabled(name) {
-		b.Importance = widget.HighImportance
-	} else {
-		b.Importance = widget.MediumImportance
-	}
-	b.Refresh()
+	pv.itemCards[name].setEnabled(pv.isEnabled(name))
 }
 
 func (pv *poolView) updateCatButton(i int) {

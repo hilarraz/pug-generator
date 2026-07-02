@@ -30,5 +30,6 @@ func (a *App) newMapsPool() *poolView {
 	return newPoolView(cats,
 		func(name string) bool { return a.cfg.IsMapEnabled(name) },
 		func(name string, on bool) { a.cfg.EnabledMaps[name] = on },
+		mapResource,
 	)
 }

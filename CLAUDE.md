@@ -76,25 +76,32 @@ GitHub-hosted Windows runner (which has the required C toolchain) on every push 
 ```
 main.go                     Entry point: builds the UI app and runs it.
 cmd/
-  gendata/                  Dev tool: regenerates the gamedata JSON from OverFast.
+  gendata/                  Dev tool: regenerates the gamedata JSON + images from OverFast.
 internal/
   domain/                   Core, dependency-free domain types.
     role.go                 Role (Tank / DPS / Support).
     hero.go                 Hero (name + role).
     map.go                  Map (name + GameMode) and GameMode constants.
     player.go               Player (name + per-role hero prefs + map prefs).
+  slug/                     Shared name → filesystem-safe slug (writer/reader agree).
+    slug.go                 slug.Of, used by gendata (names files) and gamedata (looks them up).
   gamedata/                 Static Overwatch data embedded in the binary.
-    gamedata.go             go:embed loaders + go:generate directive.
+    gamedata.go             go:embed JSON loaders + go:generate directive.
+    assets.go               go:embed assets/ + HeroImage/MapImage(name) lookup by slug.
     heroes.json             The hero roster (generated — see "Keeping game data current").
     maps.json               The map list (generated — see "Keeping game data current").
+    assets/heroes/          Hero portraits, assets/maps/ map screenshots (generated, named by slug).
   config/                   The user-editable, save/loadable session state.
     config.go               Config struct + Decode/Encode (io.Reader/Writer).
   generator/                Team generation. Pure and unit-tested (no GUI).
     generator.go            Configurable draw: role queue (bipartite matching) or open queue.
   ui/                       Fyne GUI. All user-facing strings are in French.
     app.go                  App struct: window, toolbar (Load/Save), tabs, wiring.
-    maps_tab.go             Map pool tab (checkboxes grouped by game mode).
-    heroes_tab.go           Hero pool tab (checkboxes grouped by role).
+    maps_tab.go             Map pool tab (cards grouped by game mode).
+    heroes_tab.go           Hero pool tab (cards grouped by role).
+    poolview.go             Shared master/detail pool selector (categories + item cards).
+    poolcard.go             Tappable image+name card with included/excluded look.
+    images.go               Wraps embedded hero/map images as Fyne resources.
     players_tab.go          Player roster tab (master/detail: list + editor).
     pug_tab.go              PUG tab: generation controls + results display.
 ```
@@ -142,12 +149,20 @@ The UI (`internal/ui`) reads the embedded game data once at startup, holds a sin
 
 ### Keeping game data current
 
-`internal/gamedata/heroes.json` and `maps.json` are **generated** from the community
+`internal/gamedata/heroes.json`, `maps.json`, and the images under
+`internal/gamedata/assets/{heroes,maps}/` are **generated** from the community
 [OverFast API](https://overfast-api.tekrop.fr) by `cmd/gendata`. Refresh them after a
 patch with `go generate ./internal/gamedata`. The tool keeps only maps whose game mode
 is a standard PUG mode (control, escort, hybrid, push, flashpoint, clash) and maps
-OverFast's `damage` role to `DPS`. The result is committed to the repo so the app stays
-offline-first — the API is only hit when regenerating.
+OverFast's `damage` role to `DPS`. For each kept hero/map it downloads the OverFast
+portrait/screenshot into `assets/`, named `slug.Of(name).<ext>` so the UI can find it;
+missing/failed downloads warn and are skipped rather than aborting the run. The result
+(JSON + images) is committed so the app stays offline-first — the API is only hit when
+regenerating.
+
+To swap in your own artwork, drop a `<slug>.png`/`.jpg` into `assets/heroes` or
+`assets/maps` (e.g. `dva.png`); a rebuild re-embeds it. Names with no image render as a
+plain card with just the label.
 
 Review the roster after refreshing: OverFast may include very recent or teased heroes
 that aren't in standard play. Unwanted heroes can also simply be unchecked in the Héros
